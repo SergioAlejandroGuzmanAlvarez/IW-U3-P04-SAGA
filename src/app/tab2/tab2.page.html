@@ -1,0 +1,156 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Products
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="8">
+        <ion-searchbar placeholder="Search:" (ionChange)="filterProduct($event)" #ionBusqueda></ion-searchbar>
+      </ion-col>
+    </ion-row>
+
+    <ion-grid fixed>
+      <ion-row>
+        <ion-col size="4" *ngFor="let prod of fProductos">
+          <ion-card (click)="setActiveProd(prod)">
+            <img alt="{{prod.name}}" src="{{prod.photo}}" width="420" height="420"/>
+            <ion-card-header>
+              <ion-card-title>{{prod.name}}</ion-card-title>
+              <ion-card-subtitle color="danger">${{prod.price}}</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-grid fixed>
+                <ion-row>
+                  <ion-col size="12">
+                    <p>{{prod.description}}</p>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="8">
+                    <ion-rating-stars
+                      [rating]="getPromedio(prod.calification).promedio"
+                      [color]="'darkgrey'"
+                      [filledColor]="'orange'"
+                      [margin]="2"
+                      [size]="25"
+                      [disabled]="true"
+                    ></ion-rating-stars>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="8">
+                    <h2>{{ getPromedio(prod.calification).promedio }}</h2>
+                  </ion-col>
+                  <ion-col size="4">
+                    <label class="opinar-label" (click)="setModalUnoOpen(true)">Qualify</label>
+                  </ion-col>
+                </ion-row>
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-button fill="clear" size="small" (click)="setModalDosOpen(true)">
+                      Opinions
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+              <ion-grid fixed>
+                <ion-row>
+                  <ion-col size="8">
+                    <ion-chip [color]="getColor(prod.category.idCategoryBK)" outline="true">
+                      <ion-label class="prod-categoria">{{prod.category.idCategoryBK}}</ion-label>
+                    </ion-chip>
+                  </ion-col>
+                  <ion-col size="4">
+                    <ion-chip [color]="getColorStock(prod.stock)">
+                      <ion-label>STOCK:{{ prod.stock }}</ion-label>
+                    </ion-chip>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </ion-grid>
+  <ion-modal [isOpen]="isModalUnoOpen">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Qualify {{ activeProd[1] }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="setModalUnoOpen(false)">Close</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <form [formGroup]="formCalif">
+          <ion-list>
+            <ion-item>
+              <ion-input type="text" placeholder="Name" formControlName="name"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-input type="text" placeholder="Comentary" formControlName="coment"></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-input type="number" placeholder="Qualify rank (0-5)" formControlName="calification"></ion-input>
+              <ng-container *ngFor="let val of validationMessages['calification']">
+                <div class="error-message" *ngIf="formCalif.get('calification')?.hasError(val.type) && formCalif.get('calification')?.touched">
+                  {{val.message}}
+                </div>
+              </ng-container>
+            </ion-item>
+            <ion-item>
+              <ion-button (click)="addCalif()" color="success" expand="full" [disabled]="!formCalif.valid">
+                Send
+              </ion-button>
+            </ion-item>
+          </ion-list>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal [isOpen]="isModalDosOpen">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Qualify {{ activeProd[1] }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="setModalDosOpen(false)">Close</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-list *ngFor="let coment of opiniones" class="listComent">
+          <ion-item>
+            <h4 slot="start">{{coment.name}}</h4>
+            <ion-rating-stars slot="end"
+              [rating]="coment.calification"
+              [color]="'darkgrey'"
+              [filledColor]="'orange'"
+              [margin]="2"
+              [size]="15"
+              [disabled]="true"
+            ></ion-rating-stars>
+          </ion-item>
+          <ion-item class="comentario">
+            <p>"{{coment.coment}}"</p>
+          </ion-item>
+          <ion-item class="fecha">
+            <p slot="end">Send: {{coment.fecha.getDate().toString().padStart(2, '0')}}/{{(coment.fecha.getMonth() + 1).toString().padStart(2, '0')}}/{{coment.fecha.getFullYear().toString()}}</p>
+          </ion-item>
+        </ion-list>
+        <ion-infinite-scroll>
+          <ion-infinite-scroll-content loadingText="Please wait..." loadingSpinner="bubbles"></ion-infinite-scroll-content>
+        </ion-infinite-scroll>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+</ion-content>
